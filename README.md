@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YieldStark Frontend
+
+A modern DeFi dashboard for yield optimization on Starknet, built with Next.js 15, React 19, and TypeScript.
+
+## Features
+
+- 🎨 **Modern Dark UI**: Clean, professional interface with custom PolySans fonts
+- 🔗 **Starknet Integration**: Built-in wallet connection and RPC configuration
+- 📊 **Real-time Dashboard**: Live balance tracking and position monitoring
+- 🎯 **Yield Optimization**: Automated agent for maximizing DeFi yields
+- 📱 **Responsive Design**: Optimized for all screen sizes
+- ⚡ **Performance**: Built with Next.js 15 and React 19 for optimal performance
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **UI**: React 19, TypeScript, Tailwind CSS
+- **State Management**: Zustand
+- **Blockchain**: Starknet, get-starknet
+- **Charts**: Recharts
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
 
 ## Getting Started
 
-First, run the development server:
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+2. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+
+3. **Open in Browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── dashboard/         # Dashboard pages
+│   ├── swap/             # Swap interface
+│   ├── docs/             # Documentation
+│   └── support/          # Support page
+├── components/           # Reusable components
+│   ├── layout/          # Layout components
+│   └── dashboard/       # Dashboard-specific components
+├── providers/           # Context providers
+├── stores/             # Zustand stores
+└── lib/               # Utilities and configuration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Starknet RPC
+The app is configured to use Starknet Sepolia testnet:
+- **RPC URL**: `https://starknet-sepolia.public.blastapi.io/rpc/v0_7`
+- **Chain ID**: `0x534e5f5345504f4c4941`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Styling
+- **Page Background**: `#0F1A1F`
+- **Container Background**: `#101D22`
+- **Accent Color**: `#97FCE4`
+- **Fonts**: PolySans (Neutral & Median)
 
-## Learn More
+## Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features Implemented
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+✅ **Navigation System**
+- Top navbar with logo, navigation links, chain selector, and wallet connection
+- Dashboard sidebar with Overview, History, Staking, Opportunities, Settings
+- Responsive design with proper active states
 
-## Deploy on Vercel
+✅ **Dashboard Components**
+- Vault address display with copy functionality
+- Total BTC balance with deposit/withdraw buttons
+- Agent performance metrics
+- Current positions with interactive charts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+✅ **State Management**
+- Zustand store for wallet state
+- Proper Next.js integration with SSR support
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+✅ **Routing**
+- Dashboard, Swap, Docs, Support pages
+- Proper layout management with/without sidebar
+
+## Next Steps
+
+- [ ] Implement actual wallet connection
+- [ ] Add real-time balance updates
+- [ ] Integrate with Starknet protocols
+- [ ] Add transaction history
+- [ ] Implement swap functionality
+- [ ] Add settings page
+- [ ] Deploy to production
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
