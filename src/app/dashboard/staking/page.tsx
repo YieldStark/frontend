@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import { useAccount } from '@starknet-react/core'
 import { useWalletStore } from '@/providers/wallet-store-provider'
-import { TrendingUp, Clock, Shield, Zap, ArrowUpRight, CheckCircle } from 'lucide-react'
+import { TrendingUp, Shield, Zap, ArrowUpRight, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 
 export default function StakingPage() {
-  const { account } = useAccount()
-  const { isConnected } = useWalletStore((state) => state)
+  const { } = useAccount()
+  const { } = useWalletStore((state) => state)
   const [selectedStakingOption, setSelectedStakingOption] = useState<string | null>(null)
 
   const stakingOptions = [

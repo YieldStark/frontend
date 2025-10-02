@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, Menu } from 'lucide-react'
 import { connect, disconnect } from '@starknet-io/get-starknet'
 import { WalletAccount } from 'starknet'
+import { Chain } from '@starknet-react/chains'
 import { useWalletStore } from '@/providers/wallet-store-provider'
 import { useAccount, useSwitchChain } from '@starknet-react/core'
 import { sepolia, mainnet } from '@starknet-react/chains'
@@ -19,13 +20,13 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const pathname = usePathname()
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
-  const [connectedWallet, setConnectedWallet] = useState<any>(null)
+  const [, setConnectedWallet] = useState<unknown>(null)
   const [currentChain, setCurrentChain] = useState(sepolia)
   
-  const { account } = useAccount()
+  const { } = useAccount()
   const { switchChain } = useSwitchChain({})
   
-  const { wallet, isConnected, connectWallet, disconnectWallet } = useWalletStore(
+  const { isConnected, connectWallet, disconnectWallet } = useWalletStore(
     (state) => state,
   )
 
@@ -50,15 +51,15 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         if (lastWallet) {
           console.log('Found existing wallet connection:', lastWallet)
           setConnectedWallet(lastWallet)
-          connectWallet(lastWallet)
+          connectWallet(lastWallet as any) // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-      } catch (error) {
+      } catch {
         console.log('No existing wallet connection found')
       }
     }
 
     checkExistingConnection()
-  }, [])
+  }, [connectWallet])
 
   const handleConnectWallet = async () => {
     try {
@@ -103,11 +104,11 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     }
   }
 
-  const handleChainSelect = async (chainOption: { name: string; id: string; chain: any }) => {
+  const handleChainSelect = async (chainOption: { name: string; id: string; chain: Chain }) => {
     try {
       if (switchChain && chainOption.chain) {
-        await switchChain(chainOption.chain)
-        setCurrentChain(chainOption.chain)
+        await switchChain({ chainId: chainOption.chain.id.toString() })
+        setCurrentChain(chainOption.chain as any) // eslint-disable-line @typescript-eslint/no-explicit-any
         console.log('Switched to chain:', chainOption.name)
       }
     } catch (error) {

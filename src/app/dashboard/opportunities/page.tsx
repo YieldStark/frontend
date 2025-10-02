@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, Clock, Star, ArrowRight, Zap, Shield, Target } from 'lucide-react'
+import { Clock, Star, ArrowRight, Zap, Shield, Target } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 

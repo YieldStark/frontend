@@ -51,7 +51,7 @@ export const useNetworkStore = create<NetworkStore>()(
       },
       
       isNetworkSupported: (chainId: string) => {
-        return SUPPORTED_NETWORKS.some(network => network.chain.id === chainId)
+        return SUPPORTED_NETWORKS.some(network => network.chain.id.toString() === chainId)
       },
     }),
     {

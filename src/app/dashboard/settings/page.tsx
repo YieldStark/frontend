@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useWalletStore } from '@/providers/wallet-store-provider'
-import { connect, disconnect } from '@starknet-io/get-starknet'
+import { connect } from '@starknet-io/get-starknet'
 import { WalletAccount } from 'starknet'
 import { 
   User, 
@@ -20,20 +20,19 @@ import {
   Plus,
   Copy,
   ExternalLink,
-  CheckCircle,
   AlertTriangle
 } from 'lucide-react'
 
 export default function SettingsPage() {
   const isConnected = useWalletStore((state) => state.isConnected)
   const vaultAddress = useWalletStore((state) => state.vaultAddress)
-  const connectWallet = useWalletStore((state) => state.connectWallet)
+  const { } = useWalletStore((state) => state)
   const disconnectWallet = useWalletStore((state) => state.disconnectWallet)
 
   const [activeTab, setActiveTab] = useState('wallet')
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [isConnectingBackup, setIsConnectingBackup] = useState(false)
-  const [backupWallets, setBackupWallets] = useState<any[]>([])
+  const [backupWallets, setBackupWallets] = useState<Array<{id: number, address: string, name: string, connectedAt: string, isActive: boolean}>>([])
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -150,7 +149,7 @@ export default function SettingsPage() {
           if (data.preferences) setPreferences(data.preferences)
           if (data.backupWallets) setBackupWallets(data.backupWallets)
           alert('Settings imported successfully!')
-        } catch (error) {
+        } catch {
           alert('Error importing settings. Please check the file format.')
         }
       }

@@ -21,7 +21,7 @@ const AgentPerformance = () => {
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-300">Agent's ROI:</span>
+          <span className="text-sm text-gray-300">Agent&apos;s ROI:</span>
           <span className="text-sm text-[#97FCE4] font-medium">{agentROI}x</span>
         </div>
         

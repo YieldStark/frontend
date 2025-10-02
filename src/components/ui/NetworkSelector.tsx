@@ -35,7 +35,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ className = '' }) => 
     try {
       // Switch chain using Starknet React
       if (switchChain) {
-        await switchChain(network.chain)
+        await switchChain({ chainId: network.chain.id.toString() })
       }
       
       // Update our store
