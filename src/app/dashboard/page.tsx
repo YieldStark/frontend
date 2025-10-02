@@ -1,12 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import AgentPerformance from '@/components/dashboard/AgentPerformance'
 import CurrentPositions from '@/components/dashboard/CurrentPositions'
+import DepositModal from '@/components/ui/DepositModal'
 import { useWalletStore } from '@/providers/wallet-store-provider'
 
 export default function DashboardPage() {
   const vaultAddress = useWalletStore((state) => state.vaultAddress)
   const isConnected = useWalletStore((state) => state.isConnected)
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
   
   // Debug logging
   console.log('Dashboard - vaultAddress:', vaultAddress)
@@ -26,6 +29,31 @@ export default function DashboardPage() {
       console.log('Address copied to clipboard')
     } catch (err) {
       console.error('Failed to copy address:', err)
+    }
+  }
+
+  // Handle deposit
+  const handleDeposit = async (amount: string) => {
+    try {
+      console.log('Depositing amount:', amount)
+      // TODO: Implement actual deposit logic here
+      // This would typically involve:
+      // 1. Validating the amount
+      // 2. Calling the smart contract to deposit
+      // 3. Updating the UI state
+      // 4. Showing success/error messages
+      
+      // For now, just log the deposit
+      console.log(`Depositing ${amount} $wBTC to vault`)
+      
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // You could add a success toast here
+      console.log('Deposit successful!')
+    } catch (error) {
+      console.error('Deposit failed:', error)
+      throw error // Re-throw to let the modal handle the error state
     }
   }
 
@@ -77,7 +105,10 @@ export default function DashboardPage() {
               </div>
               
               <div className="flex space-x-4 mb-4">
-                <button className="px-8 py-4 bg-[#97FCE4] text-black font-medium rounded-full hover:bg-[#85E6D1] transition-colors">
+                <button 
+                  onClick={() => setIsDepositModalOpen(true)}
+                  className="px-8 py-4 bg-[#97FCE4] text-black font-medium rounded-full hover:bg-[#85E6D1] transition-colors"
+                >
                   Deposit
                 </button>
                 <button className="px-6 py-2 bg-white text-black font-medium rounded-full hover:bg-gray-100 transition-colors">
@@ -108,6 +139,13 @@ export default function DashboardPage() {
       
       {/* Current Positions - Separate Full Width Block */}
       <CurrentPositions />
+
+      {/* Deposit Modal */}
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        onDeposit={handleDeposit}
+      />
     </div>
   )
 }
