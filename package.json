@@ -40,5 +40,11 @@
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@starknet-react/core": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
