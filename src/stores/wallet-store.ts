@@ -11,7 +11,7 @@ export type WalletState = {
 }
 
 export type WalletActions = {
-  connectWallet: () => Promise<void>
+  connectWallet: (walletAccount?: any) => Promise<void>
   disconnectWallet: () => void
   updateBalances: () => Promise<void>
   setVaultAddress: (address: string) => void
@@ -34,9 +34,31 @@ export const createWalletStore = (
 ) => {
   return createStore<WalletStore>()((set, get) => ({
     ...initState,
-    connectWallet: async () => {
+    connectWallet: async (walletAccount?: any) => {
       try {
-        set({ isConnected: true })
+        // Extract address from different possible wallet object structures
+        let address = get().vaultAddress // fallback to current address
+        
+        if (walletAccount) {
+          console.log('Wallet account object:', walletAccount)
+          console.log('Wallet account keys:', Object.keys(walletAccount))
+          
+          // Try different possible address locations
+          address = walletAccount?.account?.address || 
+                   walletAccount?.address || 
+                   walletAccount?.account?.address || 
+                   walletAccount?.address
+          
+          console.log('Extracted address:', address)
+        }
+        
+        console.log('Connecting wallet with address:', address)
+        
+        set({ 
+          isConnected: true,
+          wallet: walletAccount || get().wallet,
+          vaultAddress: address
+        })
       } catch (error) {
         console.error('Failed to connect wallet:', error)
       }

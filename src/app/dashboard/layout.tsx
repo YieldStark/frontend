@@ -7,3 +7,4 @@ export default function DashboardLayout({
 }) {
   return <Layout showSidebar={true}>{children}</Layout>
 }
+

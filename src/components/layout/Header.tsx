@@ -8,6 +8,8 @@ import { ChevronDown, Menu } from 'lucide-react'
 import { connect, disconnect } from '@starknet-io/get-starknet'
 import { WalletAccount } from 'starknet'
 import { useWalletStore } from '@/providers/wallet-store-provider'
+import { useAccount, useSwitchChain } from '@starknet-react/core'
+import { sepolia, mainnet } from '@starknet-react/chains'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -17,8 +19,11 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const pathname = usePathname()
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
-  const [selectedChain, setSelectedChain] = useState('Starknet Sepolia')
   const [connectedWallet, setConnectedWallet] = useState<any>(null)
+  const [currentChain, setCurrentChain] = useState(sepolia)
+  
+  const { account } = useAccount()
+  const { switchChain } = useSwitchChain({})
   
   const { wallet, isConnected, connectWallet, disconnectWallet } = useWalletStore(
     (state) => state,
@@ -32,8 +37,8 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   ]
 
   const chains = [
-    { name: 'Starknet Mainnet', id: 'mainnet' },
-    { name: 'Starknet Sepolia', id: 'sepolia' },
+    { name: 'Mainnet', id: 'mainnet', chain: mainnet },
+    { name: 'Sepolia', id: 'sepolia', chain: sepolia },
   ]
 
   // Check for existing connection on component mount
@@ -45,7 +50,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         if (lastWallet) {
           console.log('Found existing wallet connection:', lastWallet)
           setConnectedWallet(lastWallet)
-          connectWallet()
+          connectWallet(lastWallet)
         }
       } catch (error) {
         console.log('No existing wallet connection found')
@@ -66,14 +71,17 @@ const Header = ({ onMenuClick }: HeaderProps) => {
       })
 
       if (selectedWalletSWO) {
-        // Connect to the selected wallet with the RPC URL
+        // Connect to the selected wallet with the current chain's RPC URL
+        const rpcUrl = currentChain?.id === mainnet.id 
+          ? 'https://starknet-mainnet.public.blastapi.io/rpc/v0_8'
+          : 'https://starknet-sepolia.public.blastapi.io/rpc/v0_8'
         const myWalletAccount = await WalletAccount.connect(
-          { nodeUrl: 'https://starknet-sepolia.public.blastapi.io/rpc/v0_8' },
+          { nodeUrl: rpcUrl },
           selectedWalletSWO
         )
 
         setConnectedWallet(myWalletAccount)
-        connectWallet()
+        connectWallet(myWalletAccount)
         console.log('Wallet connected:', myWalletAccount.address)
       }
     } catch (error) {
@@ -95,10 +103,18 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     }
   }
 
-  const handleChainSelect = (chain: { name: string; id: string }) => {
-    setSelectedChain(chain.name)
-    setIsChainDropdownOpen(false)
-    console.log('Selected chain:', chain.name)
+  const handleChainSelect = async (chainOption: { name: string; id: string; chain: any }) => {
+    try {
+      if (switchChain && chainOption.chain) {
+        await switchChain(chainOption.chain)
+        setCurrentChain(chainOption.chain)
+        console.log('Switched to chain:', chainOption.name)
+      }
+    } catch (error) {
+      console.error('Failed to switch chain:', error)
+    } finally {
+      setIsChainDropdownOpen(false)
+    }
   }
 
   // Close chain dropdown when clicking outside
@@ -171,11 +187,17 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 onClick={() => setIsChainDropdownOpen(!isChainDropdownOpen)}
                 className="flex items-center space-x-2 lg:space-x-3 px-3 lg:px-4 py-2 lg:py-3 bg-[#101D22] text-white rounded-full border border-gray-700 hover:border-gray-600 transition-colors"
               >
-                <div className="w-4 lg:w-5 h-4 lg:h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">S</span>
+                <div className="w-4 lg:w-5 h-4 lg:h-5 rounded-full flex items-center justify-center">
+                  <Image
+                    src="/supported_chains/starknet.png"
+                    alt="Starknet"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
                 </div>
                 <span className="text-sm lg:text-base font-medium hidden sm:block">
-                  {selectedChain === 'Starknet Mainnet' ? 'Mainnet' : 'Sepolia'}
+                  {currentChain?.name || 'Starknet'}
                 </span>
                 <ChevronDown className="w-3 lg:w-4 h-3 lg:h-4" />
               </button>
@@ -183,17 +205,24 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               {isChainDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-[#101D22] border border-gray-700 rounded-lg shadow-lg z-50">
                   <div className="py-1">
-                    {chains.map((chain) => (
+                    {chains.map((chainOption) => (
                       <button
-                        key={chain.id}
-                        onClick={() => handleChainSelect(chain)}
-                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                          selectedChain === chain.name
+                        key={chainOption.id}
+                        onClick={() => handleChainSelect(chainOption)}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center space-x-3 ${
+                          currentChain?.id === chainOption.chain.id
                             ? 'text-[#97FCE4] bg-gray-800'
                             : 'text-white hover:bg-gray-800'
                         }`}
                       >
-                        {chain.name}
+                        <Image
+                          src="/supported_chains/starknet.png"
+                          alt="Starknet"
+                          width={16}
+                          height={16}
+                          className="rounded-full"
+                        />
+                        <span>{chainOption.name}</span>
                       </button>
                     ))}
                   </div>

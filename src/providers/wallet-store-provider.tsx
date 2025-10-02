@@ -41,3 +41,4 @@ export const useWalletStore = <T,>(
 
   return useStore(walletStoreContext, selector)
 }
+

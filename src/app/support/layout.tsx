@@ -7,3 +7,7 @@ export default function SupportLayout({
 }) {
   return <Layout showSidebar={false}>{children}</Layout>
 }
+
+
+
+

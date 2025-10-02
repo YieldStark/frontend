@@ -1,6 +1,7 @@
-// Starknet Configuration
+// Starknet Configuration - This will be dynamically set based on network selection
 export const STARKNET_CONFIG = {
-  RPC_URL: 'https://starknet-sepolia.public.blastapi.io/rpc/v0_7',
+  // These are fallback values, actual values come from network store
+  RPC_URL: 'https://starknet-sepolia.public.blastapi.io/rpc/v0_8',
   CHAIN_ID: '0x534e5f5345504f4c4941', // Starknet Sepolia
   EXPLORER_URL: 'https://sepolia.starkscan.co',
 }
@@ -22,3 +23,5 @@ export const APP_CONFIG = {
     },
   },
 }
+
+

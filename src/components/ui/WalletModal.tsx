@@ -135,3 +135,7 @@ const WalletModal = ({ isOpen, onClose, wallets, onSelectWallet, isConnecting }:
 }
 
 export default WalletModal
+
+
+
+
