@@ -1,7 +1,15 @@
 import { createStore } from 'zustand/vanilla'
 
+// Define proper types for wallet account
+interface WalletAccount {
+  address: string
+  account?: {
+    address: string
+  }
+}
+
 export type WalletState = {
-  wallet: any | null
+  wallet: WalletAccount | null
   isConnected: boolean
   vaultAddress: string
   totalBalance: number
@@ -11,7 +19,7 @@ export type WalletState = {
 }
 
 export type WalletActions = {
-  connectWallet: (walletAccount?: any) => Promise<void>
+  connectWallet: (walletAccount?: WalletAccount) => Promise<void>
   disconnectWallet: () => void
   updateBalances: () => Promise<void>
   setVaultAddress: (address: string) => void
@@ -34,7 +42,7 @@ export const createWalletStore = (
 ) => {
   return createStore<WalletStore>()((set, get) => ({
     ...initState,
-    connectWallet: async (walletAccount?: any) => {
+    connectWallet: async (walletAccount?: WalletAccount) => {
       try {
         // Extract address from different possible wallet object structures
         let address = get().vaultAddress // fallback to current address

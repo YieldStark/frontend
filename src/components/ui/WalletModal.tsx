@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
+import Image from 'next/image'
 
 interface Wallet {
   name: string
@@ -66,9 +67,11 @@ const WalletModal = ({ isOpen, onClose, wallets, onSelectWallet, isConnecting }:
                       className="w-full p-4 bg-[#0F1A1F] rounded-xl border border-gray-700 hover:border-[#97FCE4] transition-all duration-200 flex items-center space-x-4 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {wallet.icon ? (
-                        <img
+                        <Image
                           src={wallet.icon}
                           alt={wallet.name}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-lg"
                         />
                       ) : (
@@ -135,6 +138,7 @@ const WalletModal = ({ isOpen, onClose, wallets, onSelectWallet, isConnecting }:
 }
 
 export default WalletModal
+
 
 
 

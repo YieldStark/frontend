@@ -6,8 +6,7 @@ import {
   publicProvider, 
   useInjectedConnectors,
   ready,
-  braavos,
-  voyager
+  braavos
 } from '@starknet-react/core'
 import { sepolia, mainnet } from '@starknet-react/chains'
 

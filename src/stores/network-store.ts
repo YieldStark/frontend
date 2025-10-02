@@ -39,7 +39,7 @@ interface NetworkStore {
 
 export const useNetworkStore = create<NetworkStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       currentNetwork: SUPPORTED_NETWORKS[1], // Default to Sepolia
       
       setCurrentNetwork: (network: NetworkConfig) => {
@@ -60,5 +60,6 @@ export const useNetworkStore = create<NetworkStore>()(
     }
   )
 )
+
 
 
