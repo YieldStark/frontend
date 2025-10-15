@@ -1,25 +1,77 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import AgentPerformance from '@/components/dashboard/AgentPerformance'
 import CurrentPositions from '@/components/dashboard/CurrentPositions'
 import DepositModal from '@/components/ui/DepositModal'
+import WithdrawModal from '@/components/ui/WithdrawModal'
 import { useWalletStore } from '@/providers/wallet-store-provider'
+import { useTokenAddress, useYieldStarkAddress } from '@/lib/contracts'
+import { ERC20_ABI } from '@/lib/abi/erc20'
+import { cairo0Erc20Abi } from '@/lib/abi/cairo0Erc20'
+import { Contract, uint256, RpcProvider } from 'starknet'
+import { toUint256FromDecimals, uint256ToDecimalString } from '@/lib/u256'
+import { depositVesuFlow } from '@/lib/depositOrchestrator'
+import { useNetworkStore } from '@/stores/network-store'
+import { VWBTC_ADDRESS, WBTC } from '@/lib/utils/Constants'
 
 export default function DashboardPage() {
   const vaultAddress = useWalletStore((state) => state.vaultAddress)
   const isConnected = useWalletStore((state) => state.isConnected)
+  const wallet = useWalletStore((state) => state.wallet)
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const explorerUrl = useNetworkStore((s) => s.currentNetwork.explorerUrl)
+  const yieldStarkAddress = useYieldStarkAddress()
+  const wbtcAddress = useTokenAddress('WBTC')
+  const [userStaked, setUserStaked] = useState<string>('0')
+  const wbtcDecimals = 8 // Update if different on Starknet
+  const [loading, setLoading] = useState(false)
+  const [wbtcBalance, setWbtcBalance] = useState<string>('0')
   
   // Debug logging
   console.log('Dashboard - vaultAddress:', vaultAddress)
   console.log('Dashboard - isConnected:', isConnected)
+
+
+  // Format balance function (from previous working implementation)
+  const formatBalance = (balance: string) => {
+    if (!balance) return "0";
+    // WBTC has 8 decimals
+    const formattedBalance = (Number(balance) / 1e8).toFixed(8);
+    // Remove trailing zeros after decimal
+    return formattedBalance.replace(/\.?0+$/, '');
+  };
+
+  // WBTC BALANCE (using exact previous working implementation)
+  const fetchBalance = useCallback(async () => {
+    if (!wallet?.address) return;
+    setLoading(true);
+    try {
+      // Fetch WBTC balance using the exact working approach from previous codebase
+      const sepoliaProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_6" });
+      const erc20 = new Contract({ abi: cairo0Erc20Abi, address: WBTC, providerOrAccount: sepoliaProvider });
+      const res = await erc20.balanceOf(wallet.address);
+      setWbtcBalance(res.balance.toString());
+    } catch (err) {
+      console.error("Error fetching balance:", err);
+      setWbtcBalance("0");
+    } finally {
+      setLoading(false);
+    }
+  }, [wallet?.address]);
+
+  useEffect(() => {
+    if (isConnected && wallet?.address) fetchBalance();
+  }, [isConnected, wallet?.address, fetchBalance]);
+
 
   // Format address for display (show first 6 and last 4 characters)
   const formatAddress = (address: string) => {
     if (!address) return ''
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
+
 
   // Copy address to clipboard
   const copyToClipboard = async () => {
@@ -32,30 +84,54 @@ export default function DashboardPage() {
     }
   }
 
-  // Handle deposit
+  // Handle deposit (route to Vesu vWBTC)
   const handleDeposit = async (amount: string) => {
     try {
-      console.log('Depositing amount:', amount)
-      // TODO: Implement actual deposit logic here
-      // This would typically involve:
-      // 1. Validating the amount
-      // 2. Calling the smart contract to deposit
-      // 3. Updating the UI state
-      // 4. Showing success/error messages
+      if (!wallet) throw new Error('Wallet not connected')
+      // Use the proven working vWBTC batched calls approach
+      const txHash = await depositVesuFlow({
+        account: wallet as any,
+        address: wallet.address,
+        amountStr: amount,
+        signTypedDataAsync: async () => ({}), // Not used in vWBTC path
+        useSignature: true, // Use vWBTC path
+      })
       
-      // For now, just log the deposit
-      console.log(`Depositing ${amount} $wBTC to vault`)
+      console.log('Deposit successful! Transaction hash:', txHash)
+      await refreshUserStaked()
       
-      // Simulate async operation
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // You could add a success toast here
-      console.log('Deposit successful!')
+      return txHash // Return the transaction hash
     } catch (error) {
       console.error('Deposit failed:', error)
       throw error // Re-throw to let the modal handle the error state
     }
   }
+
+  // Handle withdraw (future): Not implemented for Vesu path yet
+  const handleWithdraw = async (_amount: string) => {
+    throw new Error('Withdraw via Vesu not implemented yet')
+  }
+
+  const refreshUserStaked = async () => {
+    try {
+      if (!wallet?.address) return
+      
+      // Fetch WBTC balance using the exact working approach from previous codebase
+      const sepoliaProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_6" });
+      const wbtcContract = new Contract({ abi: cairo0Erc20Abi, address: WBTC, providerOrAccount: sepoliaProvider });
+      const res = await wbtcContract.balanceOf(wallet.address);
+      const formattedBalance = formatBalance(res.balance.toString());
+      setUserStaked(formattedBalance);
+    } catch (error) {
+      console.error('Failed to fetch WBTC balance:', error)
+      // Keep previous value on error
+    }
+  }
+
+  useEffect(() => {
+    refreshUserStaked()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yieldStarkAddress, wbtcAddress, wallet?.address])
 
   return (
     <div className="space-y-6">
@@ -64,9 +140,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Vault Info and Balance */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Vault Address */}
+            {/* Wallet and Vault Addresses */}
             <div>
-              <h3 className="text-lg font-medium text-white mb-6">Your Vault Address:</h3>
+              <h3 className="text-lg font-medium text-white mb-6">Your Wallet Address:</h3>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-300 font-mono">
                   {isConnected && vaultAddress ? formatAddress(vaultAddress) : 'Not connected'}
@@ -83,9 +159,9 @@ export default function DashboardPage() {
                       </svg>
                     </button>
                     <button 
-                      onClick={() => window.open(`https://starkscan.co/contract/${vaultAddress}`, '_blank')}
+                      onClick={() => window.open(`${explorerUrl}/contract/${yieldStarkAddress}`, '_blank')}
                       className="p-1 hover:bg-gray-700 rounded transition-colors"
-                      title="View on Starkscan"
+                      title="View Vault Contract"
                     >
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -100,7 +176,9 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-lg font-medium text-white mb-4">Total BTC Balance:</h3>
               <div className="flex items-baseline space-x-2 mb-8">
-                <span className="text-6xl font-medium text-white">0.20560</span>
+                <span className="text-6xl font-medium text-white">
+                {loading ? "Loading..." : formatBalance(wbtcBalance)}
+                </span>
                 <span className="text-lg text-gray-300">$wbtc</span>
               </div>
               
@@ -111,7 +189,7 @@ export default function DashboardPage() {
                 >
                   Deposit
                 </button>
-                <button className="px-6 py-2 bg-white text-black font-medium rounded-full hover:bg-gray-100 transition-colors">
+                <button onClick={() => setIsWithdrawModalOpen(true)} className="px-6 py-2 bg-white text-black font-medium rounded-full hover:bg-gray-100 transition-colors">
                   Withdraw
                 </button>
               </div>
@@ -145,6 +223,13 @@ export default function DashboardPage() {
         isOpen={isDepositModalOpen}
         onClose={() => setIsDepositModalOpen(false)}
         onDeposit={handleDeposit}
+      />
+
+      {/* Withdraw Modal */}
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        onWithdraw={handleWithdraw}
       />
     </div>
   )

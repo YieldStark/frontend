@@ -30,7 +30,8 @@ export type WalletStore = WalletState & WalletActions
 export const defaultInitState: WalletState = {
   wallet: null,
   isConnected: false,
-  vaultAddress: '0x017b5442309bf987c91d5c855598867017da9be848078164d6b15805f16bbe70',
+  // Empty until a wallet actually connects
+  vaultAddress: '',
   totalBalance: 0.20560,
   vesuBalance: 0.15,
   ekuboBalance: 0.05,
@@ -45,17 +46,14 @@ export const createWalletStore = (
     connectWallet: async (walletAccount?: WalletAccount) => {
       try {
         // Extract address from different possible wallet object structures
-        let address = get().vaultAddress // fallback to current address
+        let address = ''
         
         if (walletAccount) {
           console.log('Wallet account object:', walletAccount)
           console.log('Wallet account keys:', Object.keys(walletAccount))
           
           // Try different possible address locations
-          address = walletAccount?.account?.address || 
-                   walletAccount?.address || 
-                   walletAccount?.account?.address || 
-                   walletAccount?.address
+          address = walletAccount?.account?.address || walletAccount?.address || ''
           
           console.log('Extracted address:', address)
         }

@@ -7,24 +7,41 @@ import { X, CheckCircle, Shield, Zap, TrendingUp } from 'lucide-react'
 interface DepositModalProps {
   isOpen: boolean
   onClose: () => void
-  onDeposit: (amount: string) => void
+  onDeposit: (amount: string) => Promise<string | void>
 }
 
 const DepositModal = ({ isOpen, onClose, onDeposit }: DepositModalProps) => {
   const [amount, setAmount] = useState('')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [isDepositing, setIsDepositing] = useState(false)
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleDeposit = async () => {
     if (!amount || !agreedToTerms) return
     
     setIsDepositing(true)
     try {
-      await onDeposit(amount)
-      // Close modal after successful deposit
-      onClose()
-      setAmount('')
-      setAgreedToTerms(false)
+      const hash = await onDeposit(amount)
+      if (hash) {
+        setTxHash(hash)
+        setIsSuccess(true)
+        console.log('Deposit successful! Transaction hash:', hash)
+        
+        // Close modal after a short delay to show success
+        setTimeout(() => {
+          onClose()
+          setAmount('')
+          setAgreedToTerms(false)
+          setTxHash(null)
+          setIsSuccess(false)
+        }, 15000) // 15 seconds
+      } else {
+        // Close modal immediately if no hash returned
+        onClose()
+        setAmount('')
+        setAgreedToTerms(false)
+      }
     } catch (error) {
       console.error('Deposit failed:', error)
     } finally {
@@ -145,25 +162,50 @@ const DepositModal = ({ isOpen, onClose, onDeposit }: DepositModalProps) => {
                 </label>
               </div>
 
-              {/* Deposit Button */}
-              <button
-                onClick={handleDeposit}
-                disabled={!canDeposit}
-                className={`w-full py-4 rounded-xl font-medium transition-all duration-200 ${
-                  canDeposit
-                    ? 'bg-[#97FCE4] text-black hover:bg-[#85E6D1] shadow-lg shadow-[#97FCE4]/20'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {isDepositing ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                    <span>Processing Deposit...</span>
+              {/* Success State */}
+              {isSuccess && txHash ? (
+                <div className="text-center py-6">
+                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-white" />
                   </div>
-                ) : (
-                  `Deposit ${amount || '0.00'} $wBTC`
-                )}
-              </button>
+                  <h3 className="text-xl font-semibold text-white mb-2">Deposit Successful!</h3>
+                  <p className="text-gray-300 mb-4">Your transaction has been submitted to the network.</p>
+                  <div className="bg-[#0F1A1F] rounded-lg p-3 border border-gray-700">
+                    <p className="text-sm text-gray-400 mb-1">Transaction Hash:</p>
+                    <p className="text-xs text-[#97FCE4] font-mono break-all">
+                      {txHash}
+                    </p>
+                    <a
+                      href={`https://sepolia.starkscan.co/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 underline mt-2 inline-block"
+                    >
+                      View on Starkscan →
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                /* Deposit Button */
+                <button
+                  onClick={handleDeposit}
+                  disabled={!canDeposit}
+                  className={`w-full py-4 rounded-xl font-medium transition-all duration-200 ${
+                    canDeposit
+                      ? 'bg-[#97FCE4] text-black hover:bg-[#85E6D1] shadow-lg shadow-[#97FCE4]/20'
+                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {isDepositing ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing Deposit...</span>
+                    </div>
+                  ) : (
+                    `Deposit ${amount || '0.00'} $wBTC`
+                  )}
+                </button>
+              )}
 
               {/* Security Notice */}
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">

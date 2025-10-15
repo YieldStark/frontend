@@ -8,6 +8,7 @@ export const STARKNET_CONFIG = {
 
 // App Configuration
 export const APP_CONFIG = {
+  // Default vault address kept for backward compatibility (unused by new flow)
   VAULT_ADDRESS: '0x017b5442309bf987c91d5c855598867017da9be848078164d6b15805f16bbe70',
   SUPPORTED_TOKENS: ['wbtc', 'eth', 'usdc'],
   PROTOCOLS: {
@@ -20,6 +21,20 @@ export const APP_CONFIG = {
       name: 'Ekubo',
       color: '#8B5CF6',
       apy: 2.4,
+    },
+  },
+}
+
+// Onchain contracts per network
+export const CONTRACTS = {
+  YIELDSTARK: {
+    sepolia: '0x059f9e0c508dd608744e826f822ec39efdcb83410b2ab3a35a2f388eb3c12a29',
+    mainnet: '', // fill if deployed
+  },
+  TOKENS: {
+    WBTC: {
+      sepolia: '0x00abbd6f1e590eb83addd87ba5ac27960d859b1f17d11a3c1cd6a0006704b141',
+      mainnet: '', // fill if deployed
     },
   },
 }

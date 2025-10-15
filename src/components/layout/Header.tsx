@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, Menu } from 'lucide-react'
 import { connect, disconnect } from '@starknet-io/get-starknet'
 import { WalletAccount } from 'starknet'
-import { Chain } from '@starknet-react/chains'
 import { useWalletStore } from '@/providers/wallet-store-provider'
 import { useAccount, useSwitchChain } from '@starknet-react/core'
 import { sepolia, mainnet } from '@starknet-react/chains'
@@ -20,10 +19,10 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const pathname = usePathname()
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
-  const [, setConnectedWallet] = useState<unknown>(null)
+  const [connectedWallet, setConnectedWallet] = useState<any>(null)
   const [currentChain, setCurrentChain] = useState(sepolia)
   
-  const { } = useAccount()
+  const { account } = useAccount()
   const { switchChain } = useSwitchChain({})
   
   const { isConnected, connectWallet, disconnectWallet } = useWalletStore(
@@ -50,16 +49,24 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         const lastWallet = await connect({ modalMode: 'neverAsk' })
         if (lastWallet) {
           console.log('Found existing wallet connection:', lastWallet)
-          setConnectedWallet(lastWallet)
-          connectWallet(lastWallet as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+          // Build WalletAccount for unified handling
+          const rpcUrl = currentChain?.id === mainnet.id 
+            ? 'https://starknet-mainnet.public.blastapi.io/rpc/v0_8'
+            : 'https://starknet-sepolia.public.blastapi.io/rpc/v0_8'
+          const myWalletAccount = await WalletAccount.connect(
+            { nodeUrl: rpcUrl },
+            lastWallet
+          )
+          setConnectedWallet(myWalletAccount)
+          connectWallet(myWalletAccount as any)
         }
-      } catch {
+      } catch (error) {
         console.log('No existing wallet connection found')
       }
     }
 
     checkExistingConnection()
-  }, [connectWallet])
+  }, [])
 
   const handleConnectWallet = async () => {
     try {
@@ -82,7 +89,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         )
 
         setConnectedWallet(myWalletAccount)
-        connectWallet(myWalletAccount)
+        connectWallet(myWalletAccount as any)
         console.log('Wallet connected:', myWalletAccount.address)
       }
     } catch (error) {
@@ -104,11 +111,11 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     }
   }
 
-  const handleChainSelect = async (chainOption: { name: string; id: string; chain: Chain }) => {
+  const handleChainSelect = async (chainOption: { name: string; id: string; chain: any }) => {
     try {
       if (switchChain && chainOption.chain) {
-        await switchChain({ chainId: chainOption.chain.id.toString() })
-        setCurrentChain(chainOption.chain as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        await switchChain(chainOption.chain)
+        setCurrentChain(chainOption.chain)
         console.log('Switched to chain:', chainOption.name)
       }
     } catch (error) {
