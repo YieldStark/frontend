@@ -49,3 +49,4 @@ export const cairo0Erc20Abi = [
   }
 ] as const;
 
+

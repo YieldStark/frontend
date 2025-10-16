@@ -1,6 +1,7 @@
 # YieldStark - Unifying Bitcoin DeFi Across Platforms
-
-![YieldStark Banner](https://via.placeholder.com/1200x400/101D22/97FCE4?text=YieldStark+-+Unifying+Bitcoin+DeFi+Across+Platforms)
+![Resolve Hackathon](https://img.shields.io/badge/Resolve-Hackathon-5f4def)
+![Vesu](https://img.shields.io/badge/Vesu-Powered-orange)
+![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-Integrated-blue)
 
 ## 🚀 **Live Demo**
 **[Launch App](https://ys-frontend.vercel.app)** 
